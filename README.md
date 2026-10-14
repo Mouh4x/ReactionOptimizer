@@ -33,6 +33,10 @@ décrit en §8.
 
 - 📥 Import **Excel (.xlsx/.xls)** et **CSV** (BOM, encodages courants, virgules décimales) ;
 - ✍️ Saisie manuelle par tableau éditable ;
+- 🧩 **Gestion dynamique des colonnes** : ajout, suppression, renommage et retypage
+  (nombre / texte / booléen / automatique) depuis la page *Saisie manuelle*, avec
+  mise à jour automatique de la cible et des colonnes ignorées — aucune colonne
+  n'est verrouillée, la suppression de la cible invalide proprement la sélection ;
 - ➕ **Ajout à un tableau existant** avec correspondance normalisée des colonnes
   (une même colonne logique n'est jamais dupliquée, même avec des en-têtes abîmés) ;
 - 🔍 Détection automatique des variables numériques / catégorielles / de traçabilité ;
@@ -77,6 +81,9 @@ export.
 - Nettoyage des en-têtes : BOM (même répétés), espaces, normalisation Unicode NFC,
   dédoublonnage (`nom.1`, `nom.2`) — **centralisé** dans `data_loader.clean_dataframe` ;
 - Conversion « 1,5 » → 1.5 si ≥ 80 % des valeurs de la colonne sont convertibles ;
+- Booléens reconnus (oui/non, vrai/faux, 0/1) via le retypage, convertibles en
+  nombre (1.0 / 0.0) ; les valeurs incompatibles sont vidées et comptées, jamais
+  remplacées silencieusement par 0 ou « faux » ;
 - Numériques : imputation médiane + standardisation ; catégorielles : imputation par
   la modalité fréquente + one-hot (modalités inconnues ignorées à la prédiction) ;
 - Tout est dans le `Pipeline` scikit-learn : les statistiques sont ajustées **uniquement
@@ -190,8 +197,10 @@ Aucune donnée utilisateur (`data/datasets/`) n'est supprimée.
 1. **Import Excel** : téléchargez le modèle vide, remplissez l'onglet `Donnees`
    (1 ligne = 1 expérience, en-têtes en ligne 1), importez. Choisissez *Remplacer*
    ou *Ajouter au jeu de données actuel* (fusion sûre, schémas différents signalés).
-2. **Saisie manuelle** : tableau éditable, « + » pour ajouter lignes/colonnes,
-   virgules décimales acceptées.
+2. **Saisie manuelle** : tableau éditable, « + » pour ajouter des lignes, panneau
+   « Gérer les colonnes » pour ajouter / supprimer / renommer / retyper les colonnes
+   (les références — cible, colonnes ignorées — suivent automatiquement), virgules
+   décimales acceptées.
 3. **Modèle et optimisation** : choisissez la cible et l'objectif (maximiser /
    minimiser), lancez l'analyse, lisez la comparaison des modèles, l'optimum, les
    suggestions, les graphiques ; exportez en Excel.
@@ -222,7 +231,9 @@ Un exemple synthétique prêt à l'emploi : `data/examples/exemple_ds.csv`.
 python -m pytest tests/ -q
 ```
 
-Couverture : import CSV (BOM simple/répété, encodages), Excel, normalisation,
+Couverture : gestion dynamique des colonnes (ajout, suppression, renommage,
+retypage, cohérence cible/ignorées), import CSV (BOM simple/répété, encodages),
+Excel (multi-feuilles, colonnes arbitraires), normalisation,
 fusions (colonnes identiques/réordonnées/incompatibles, **absence de `source`
 dupliquée**), persistance/déduplication, entraînement, petits jeux de données,
 référence honnête, validation par étude, modèle en échec, minimisation/

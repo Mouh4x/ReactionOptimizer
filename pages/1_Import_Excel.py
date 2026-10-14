@@ -8,6 +8,7 @@ import streamlit as st
 
 from reactionoptimizer.config import datasets_dir, load_settings
 from reactionoptimizer.data_loader import (
+    load_excel,
     load_table,
     merge_datasets,
     save_dataset,
@@ -28,9 +29,25 @@ uploaded = st.file_uploader("Fichier Excel ou CSV", type=["xlsx", "xls", "csv"])
 
 if uploaded is not None:
     try:
-        df = load_table(uploaded, uploaded.name)
+        if uploaded.name.lower().endswith((".xlsx", ".xls")):
+            # Les colonnes sont détectées automatiquement, sans liste prédéfinie ;
+            # seule la feuille est à choisir quand le classeur en contient plusieurs.
+            book = pd.ExcelFile(uploaded)
+            if not book.sheet_names:
+                st.error("Classeur vide : aucune feuille trouvée.")
+                st.stop()
+            sheet = (st.selectbox("Feuille à importer", book.sheet_names)
+                     if len(book.sheet_names) > 1 else book.sheet_names[0])
+            df = load_excel(book, sheet_name=sheet)
+        else:
+            df = load_table(uploaded, uploaded.name)
     except Exception as exc:
         st.error(f"Lecture impossible : {exc}")
+        st.stop()
+
+    if df.empty or len(df.columns) == 0:
+        st.error("Aucune donnée exploitable dans ce fichier (tableau vide). "
+                 "Le jeu de données actuel n'a pas été modifié.")
         st.stop()
 
     st.subheader("Aperçu")
@@ -38,7 +55,8 @@ if uploaded is not None:
 
     numeric_cols = [c for c in df.columns if pd.api.types.is_numeric_dtype(df[c])]
     if not numeric_cols:
-        st.error("Aucune colonne numérique trouvée : impossible de choisir une cible.")
+        st.error("Aucune colonne numérique trouvée : impossible de choisir une cible. "
+                 "Le jeu de données actuel n'a pas été modifié.")
         st.stop()
 
     default = load_settings()["default_target"].lower()

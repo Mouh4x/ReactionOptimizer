@@ -27,10 +27,19 @@ st.dataframe(df)
 
 numeric_cols = [c for c in df.columns if pd.api.types.is_numeric_dtype(df[c])]
 if not numeric_cols:
-    st.error("Aucune colonne numérique : impossible de choisir une cible.")
+    st.error("Aucune colonne numérique : impossible de choisir une cible. "
+             "Ajoutez ou convertissez une colonne (page « Saisie manuelle »).")
     st.stop()
 
-default = st.session_state.get("target", load_settings()["default_target"]).lower()
+# La cible et les ignorées mémorisées peuvent pointer vers des colonnes
+# supprimées ou retypées : on ne les utilise que si elles sont encore valides.
+prev_target = st.session_state.get("target")
+if prev_target and prev_target not in numeric_cols:
+    st.info(f"La cible précédente « {prev_target} » n'est plus disponible "
+            "(colonne supprimée ou devenue non numérique) : choisissez une "
+            "nouvelle colonne à optimiser.")
+default = (prev_target if prev_target in numeric_cols
+           else load_settings()["default_target"]).lower()
 idx = next((i for i, c in enumerate(numeric_cols) if c.lower() == default), 0)
 
 c1, c2, c3 = st.columns(3)
@@ -41,6 +50,11 @@ expand = c3.slider("Élargir la plage de recherche (%)", 0, 30, 0) / 100
 others = [c for c in df.columns if c != target]
 ignore_default = [c for c in st.session_state.get("ignore", []) if c in others]
 ignore = st.multiselect("Colonnes ignorées", others, default=ignore_default)
+
+# Sélection mémorisée : elle suivra les renommages et sera purgée si la
+# colonne disparaît (session.set_dataset / column_ops.update_references).
+st.session_state["target"] = target
+st.session_state["ignore"] = ignore
 
 schema = detect_schema(df, target=target, ignore=ignore)
 X, y = prepare_xy(df, schema)
@@ -71,13 +85,21 @@ if st.button("🚀 Lancer l'analyse", type="primary"):
         except Exception as exc:
             st.error(f"Analyse impossible : {exc}")
             st.stop()
-    st.session_state["analysis"] = {"fit": fit, "res": res, "schema": schema}
+    st.session_state["analysis"] = {"fit": fit, "res": res, "schema": schema,
+                                    "goal": goal}
 
 analysis = st.session_state.get("analysis")
 if analysis is None:
     st.stop()
-if analysis["schema"].target != target:
-    st.info("Les résultats affichés concernent une autre cible : relancez l'analyse.")
+
+# Les résultats affichés doivent correspondre EXACTEMENT à la cible, au sens
+# d'optimisation et aux colonnes actuels : toute divergence invalide l'affichage.
+sc_check = analysis["schema"]
+if (sc_check.target != target
+        or analysis.get("goal") != goal
+        or any(c not in df.columns for c in sc_check.features + [sc_check.target])):
+    st.info("Les données, la cible ou l'objectif ont changé depuis cette analyse : "
+            "relancez-la pour des résultats à jour.")
     st.stop()
 
 fit, res, sc = analysis["fit"], analysis["res"], analysis["schema"]
@@ -94,7 +116,8 @@ for note in fit.warnings:
 
 st.header("2. Conditions optimales prédites")
 st.dataframe(res.optimum.round(3))
-st.caption("« _predit_brut » : sortie du modèle avant application des bornes physiques "
+st.caption(f"Objectif : {goal.lower()} « {sc.target} ». "
+           "« _predit_brut » : sortie du modèle avant application des bornes physiques "
            "déclarées (constraints.py). « incertitude » : variation de la prédiction "
            "entre rééchantillonnages des données ; elle sous-estime l'erreur réelle — "
            "référez-vous au RMSE ci-dessus.")

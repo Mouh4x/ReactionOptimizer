@@ -43,6 +43,7 @@ REQUIRED_FILES = [
     "pages/2_Saisie_manuelle.py",
     "pages/3_Modele_et_Optimisation.py",
     "src/reactionoptimizer/__init__.py",
+    "src/reactionoptimizer/column_ops.py",
     "src/reactionoptimizer/config.py",
     "src/reactionoptimizer/constraints.py",
     "src/reactionoptimizer/data_loader.py",
@@ -54,6 +55,7 @@ REQUIRED_FILES = [
     "src/reactionoptimizer/schema.py",
     "src/reactionoptimizer/session.py",
     "tests/conftest.py",
+    "tests/test_column_ops.py",
     "tests/test_data_loader.py",
     "tests/test_models_evaluation.py",
     "tests/test_optimizer_constraints.py",
@@ -61,6 +63,7 @@ REQUIRED_FILES = [
 ]
 
 MODULES = [
+    "reactionoptimizer.column_ops",
     "reactionoptimizer.config",
     "reactionoptimizer.constraints",
     "reactionoptimizer.data_loader",

@@ -97,11 +97,15 @@ def load_csv(file) -> pd.DataFrame:
     return clean_dataframe(read_csv_safely(file))
 
 
-def load_table(file, filename: str = "") -> pd.DataFrame:
-    """Point d'entrée unique d'importation : Excel ou CSV selon l'extension."""
+def load_table(file, filename: str = "", sheet_name=0) -> pd.DataFrame:
+    """Point d'entrée unique d'importation : Excel ou CSV selon l'extension.
+
+    `sheet_name` est transmis à :func:`load_excel` (ignoré pour les CSV) :
+    la page d'importation peut ainsi proposer le choix de la feuille.
+    """
     if str(filename).lower().endswith(".csv"):
         return load_csv(file)
-    return load_excel(file)
+    return load_excel(file, sheet_name=sheet_name)
 
 
 def load_dataset(path: Path) -> pd.DataFrame:
