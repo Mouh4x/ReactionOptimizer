@@ -20,7 +20,7 @@ exécution réelle des tests et de l'application dans un environnement Python 3
 | 7 | Contraintes expérimentales : aucune règle documentée, rien entre l'optimiseur et l'affichage | — | `constraints.py` (bornes cibles, `check_bounds`, `custom_filter` à compléter, ex. solvant/température) vérifié **avant** présentation ; « aucun candidat admissible » → erreur explicite ; README §10 explique où modifier |
 | 8 | Suggestions pouvant reproposer une expérience déjà réalisée | Pas de déduplication contre le jeu de données | Exclusion des candidats quasi identiques (numériques à 1e-4, modalités exactes) + dédoublonnage Sobol |
 | 9 | Fichiers superflus | `*.bak` (dont `schema.py.bak`, `models.py.bak` vides), `src/reactionoptimizer.rar` (archive imbriquée vide), `__pycache__/`, `README.md` vide, `config/settings.yaml` vide | Nettoyés ; `.gitignore` ajouté ; `update_reactionoptimizer.py` remplace l'ancien `mise_a_jour_reactionoptimizer.py` |
-| 10 | Aucun test automatisé | — | 27 tests pytest (données, modèles, optimisation, application), 100 % synthétiques et reproductibles |
+| 10 | Aucun test automatisé | — | 33 tests pytest (données, modèles, optimisation, application), 100 % synthétiques et reproductibles |
 | 11 | Incertitude non présentée comme telle | — | Bootstrap 30 réentraînements, affiché avec la réserve « sous-estime l'erreur réelle » ; optimum au bord et extrapolation signalés |
 
 ## Points vérifiés et sains
