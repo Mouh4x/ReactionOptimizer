@@ -1,0 +1,5 @@
+# Configuration ReactionOptimizer
+# default_target : colonne proposée par défaut comme cible à optimiser
+# datasets_dir   : dossier des jeux de données sauvegardés (relatif à la racine)
+default_target: DS
+datasets_dir: data/datasets

@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Environnements virtuels
+.venv/
+venv/
+env/
+
+# Sauvegardes et archives
+*.bak
+*.rar
+*.zip
+
+# Données utilisateur (sauvegardes locales — ne pas publier)
+data/datasets/
+
+# Secrets / configuration locale Streamlit
+.streamlit/secrets.toml
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+backup_*/
+data/raw/*.xlsx
+!data/raw/demo.xlsx
